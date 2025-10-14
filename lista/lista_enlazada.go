@@ -34,9 +34,29 @@ func (l *listaEnlazada[T]) EstaVacia() bool {
 	return l.primero == nil && l.ultimo == nil && l.largo == 0
 }
 
-func (l *listaEnlazada[T]) InsertarPrimero(dato T) {}
+func (l *listaEnlazada[T]) InsertarPrimero(val T) {
+	n := &nodo[T]{dato: val}
+	if l.EstaVacia() {
+		l.primero = n
+		l.ultimo = n
+	} else {
+		n.prox = l.primero
+		l.primero = n
+	}
+	l.largo++
+}
 
-func (l *listaEnlazada[T]) InsertarUltimo(dato T) {}
+func (l *listaEnlazada[T]) InsertarUltimo(val T) {
+	n := &nodo[T]{dato: val}
+	if l.EstaVacia() {
+		l.primero = n
+		l.ultimo = n
+	} else {
+		l.ultimo.prox = n
+		l.ultimo = n
+	}
+	l.largo++
+}
 
 func (l *listaEnlazada[T]) BorrarPrimero() T {
 	if l.EstaVacia() {
