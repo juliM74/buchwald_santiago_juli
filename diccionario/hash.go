@@ -35,11 +35,59 @@ func crearTabla[K comparable, V any](capacidad int) []TDAlista.Lista[parClaveVal
 
 func CrearHash[K comparable, V any]() Diccionario[K, V] {}
 
-func (d *hashAbierto[K, V]) redimensionar(nuevaCapacidad int) {}
+func (d *hashAbierto[K, V]) redimensionar(nuevaCapacidad int) {
+	nuevaTabla := crearTabla[K, V](nuevaCapacidad)
 
-func (d *hashAbierto[K, V]) buscarNodoClave(clave K) TDAlista.IteradorLista[parClaveValor[K, V]] {}
+	for i := range nuevaTabla {
+		nuevaTabla[i] = TDAlista.CrearListaEnlazada[parClaveValor[K, V]]()
+	}
 
-func (d *hashAbierto[K, V]) Guardar(clave K, dato V) {}
+	for _, lista := range d.tabla {
+		iter := lista.Iterador()
+		for iter.HaySiguiente() {
+			campo := iter.VerActual()
+			indice := funcionHashing(campo.clave, nuevaCapacidad)
+			nuevaTabla[indice].InsertarUltimo(campo)
+			iter.Siguiente()
+		}
+	}
+
+	d.tabla = nuevaTabla
+	d.capacidad = nuevaCapacidad
+}
+
+func (d *hashAbierto[K, V]) buscarNodoClave(clave K) TDAlista.IteradorLista[parClaveValor[K, V]] {
+	indice := funcionHashing(clave, d.capacidad)
+	lista := d.tabla[indice]
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
+		campo := iter.VerActual()
+		if campo.clave == clave {
+			return iter
+		}
+		iter.Siguiente()
+	}
+	return nil
+}
+
+func (d *hashAbierto[K, V]) Guardar(clave K, dato V) {
+	factorCarga := float64(d.cantidad+1) / float64(d.capacidad)
+	if factorCarga > FACTOR_CARGA_AUMENTO {
+		d.redimensionar(d.capacidad * FACTOR_AGRANDAR)
+	}
+	iter := d.buscarNodoClave(clave)
+	indice := funcionHashing(clave, d.capacidad)
+
+	if iter == nil {
+		campoNuevo := parClaveValor[K, V]{clave, dato}
+		d.tabla[indice].InsertarUltimo(campoNuevo)
+		d.cantidad++
+		return
+	}
+	campo := iter.Borrar()
+	campo.dato = dato
+	iter.Insertar(campo)
+}
 
 func (d *hashAbierto[K, V]) Pertenece(clave K) bool {}
 
