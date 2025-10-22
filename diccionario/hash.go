@@ -34,7 +34,7 @@ type iteradorHash[K comparable, V any] struct {
 func crearTabla[K comparable, V any](capacidad int) []TDAlista.Lista[parClaveValor[K, V]] {
 	tabla := make([]TDAlista.Lista[parClaveValor[K, V]], capacidad)
 	for i := range tabla {
-	tabla[i] = TDAlista.CrearListaEnlazada[parClaveValor[K, V]]()
+		tabla[i] = TDAlista.CrearListaEnlazada[parClaveValor[K, V]]()
 	}
 	return tabla
 }
@@ -101,11 +101,38 @@ func (d *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	iter.Insertar(campo)
 }
 
-func (d *hashAbierto[K, V]) Pertenece(clave K) bool {}
+func (d *hashAbierto[K, V]) Pertenece(clave K) bool {
+	return d.buscarNodoClave(clave) != nil
+}
 
-func (d *hashAbierto[K, V]) Obtener(clave K) V {}
+func (d *hashAbierto[K, V]) Obtener(clave K) V {
+	iter := d.buscarNodoClave(clave)
+	if iter == nil {
+		panic("La clave no pertenece al diccionario")
+	}
+	campo := iter.VerActual()
+	return campo.dato
+}
 
-func (d *hashAbierto[K, V]) Borrar(clave K) V {}
+func (d *hashAbierto[K, V]) Borrar(clave K) V {
+	indice := funcionHashing(clave, d.capacidad)
+	lista := d.tabla[indice]
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
+		campo := iter.VerActual()
+		if campo.clave == clave {
+			iter.Borrar()
+			d.cantidad--
+			factorCarga := float64(d.cantidad) / float64(d.capacidad)
+		if factorCarga < FACTOR_CARGA_REDUCCION && d.capacidad > CAPACIDAD_INICIAL {
+			d.redimensionar(d.capacidad / FACTOR_ACHICAR)
+	}
+	return campo.dato
+	}
+	iter.Siguiente()
+	}
+	panic("La clave no pertenece al diccionario")
+}
 
 func (d *hashAbierto[K, V]) Cantidad() int {
 	return d.cantidad
