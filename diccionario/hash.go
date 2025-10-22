@@ -39,7 +39,7 @@ func crearTabla[K comparable, V any](capacidad int) []TDAlista.Lista[parClaveVal
 	return tabla
 }
 
-func CrearHash[K comparable, V any]() Diccionario[K, V] {
+func CrearHash[K any, V any](cmp func(K, K) bool) Diccionario[K, V]
 	return &hashAbierto[K, V]{
 	tabla: crearTabla[K, V](CAPACIDAD_INICIAL),
 	cantidad: 0,
