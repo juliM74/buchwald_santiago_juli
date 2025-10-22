@@ -31,9 +31,21 @@ type iteradorHash[K comparable, V any] struct {
 	posDic      int
 }
 
-func crearTabla[K comparable, V any](capacidad int) []TDAlista.Lista[parClaveValor[K, V]] {}
+func crearTabla[K comparable, V any](capacidad int) []TDAlista.Lista[parClaveValor[K, V]] {
+	tabla := make([]TDAlista.Lista[parClaveValor[K, V]], capacidad)
+	for i := range tabla {
+	tabla[i] = TDAlista.CrearListaEnlazada[parClaveValor[K, V]]()
+	}
+	return tabla
+}
 
-func CrearHash[K comparable, V any]() Diccionario[K, V] {}
+func CrearHash[K comparable, V any]() Diccionario[K, V] {
+	return &hashAbierto[K, V]{
+	tabla: crearTabla[K, V](CAPACIDAD_INICIAL),
+	cantidad: 0,
+	capacidad: CAPACIDAD_INICIAL,
+	}
+}
 
 func (d *hashAbierto[K, V]) redimensionar(nuevaCapacidad int) {
 	nuevaTabla := crearTabla[K, V](nuevaCapacidad)
