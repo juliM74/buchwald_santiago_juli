@@ -138,15 +138,48 @@ func (d *hashAbierto[K, V]) Cantidad() int {
 	return d.cantidad
 }
 
-func (d *hashAbierto[K, V]) Iterar(visitar func(K, V) bool) {}
+func (d *hashAbierto[K, V]) Iterar(visitar func(K, V) bool) {
+	for _, lista := range d.tabla {
+		iter := lista.Iterador()
+		for iter.HaySiguiente() {
+			campo := iter.VerActual()
+			if !visitar(campo.clave, campo.dato) {
+			return
+			}
+			iter.Siguiente()
+		}
+	}
+}
 
-func (d *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {}
+func (d *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
+	it := &iteradorHash[K, V]{diccionario: d, posDic: -1}
+	it.avanzarHastaElemento()
+	return it
+}
 
-func (it *iteradorHash[K, V]) avanzarHastaElemento() {}
+func (it *iteradorHash[K, V]) avanzarHastaElemento() {
+	for it.posDic++; it.posDic < len(it.diccionario.tabla); it.posDic++ {
+		if it.diccionario.tabla[it.posDic].Cantidad() > 0 {
+			it.iterLista = it.diccionario.tabla[it.posDic].Iterador()
+			if it.iterLista.HaySiguiente() {
+				return
+			}
+		}
+	}
+	it.iterLista = nil
+}
 
-func (it *iteradorHash[K, V]) HaySiguiente() bool {}
+func (it *iteradorHash[K, V]) HaySiguiente() bool {
+	return it.iterLista != nil && it.iterLista.HaySiguiente()
+}
 
-func (it *iteradorHash[K, V]) Siguiente() {}
+func (it *iteradorHash[K, V]) Siguiente() {
+	if !it.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	campo := it.iterLista.VerActual()
+	return campo.clave, campo.dato
+}
 
 func funcionHashing[K comparable](clave K, tam int) int {
 	h := fnv.New64a()
